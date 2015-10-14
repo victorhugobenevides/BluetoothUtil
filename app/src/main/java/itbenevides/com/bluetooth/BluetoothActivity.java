@@ -1,12 +1,17 @@
 package itbenevides.com.bluetooth;
 
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -14,6 +19,11 @@ import android.widget.ToggleButton;
 public class BluetoothActivity extends ActionBarActivity {
     String tipo = BluetoothUtil.TIPO_SERVIDOR;
     public static BluetoothUtil util=null;
+
+    LinearLayout linearLayout1;
+    LinearLayout linearLayout2;
+    TextView txtmsg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,8 +31,9 @@ public class BluetoothActivity extends ActionBarActivity {
 
 
         ToggleButton btTipo = (ToggleButton) findViewById(R.id.toggleButton);
-
-
+         txtmsg=(TextView) findViewById(R.id.textview_msg);
+         linearLayout1 = (LinearLayout)findViewById(R.id.linearlayout1);
+         linearLayout2 = (LinearLayout)findViewById(R.id.linearLayout2);
 
         btTipo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -43,7 +54,22 @@ public class BluetoothActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    util = new BluetoothUtil(BluetoothActivity.this,tipo);
+                    util = new BluetoothUtil(BluetoothActivity.this,tipo,new Handler() {
+                        @Override
+                        public void handleMessage(Message msg) {
+                            String[] status = (String[]) msg.obj;
+
+                            if(status[1].equals(BluetoothUtil.STATUS_CONECTANDO)){
+                                linearLayout1.setVisibility(View.GONE);
+                                linearLayout2.setVisibility(View.VISIBLE);
+
+                            }else  if(status[1].equals(BluetoothUtil.STATUS_CONECTADO)){
+                                txtmsg.setText(status[0]);
+                            }
+
+
+                        }
+                    });
 
                 }catch (Exception e){
                     Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();

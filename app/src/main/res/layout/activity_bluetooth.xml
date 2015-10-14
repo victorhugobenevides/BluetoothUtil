@@ -7,33 +7,63 @@
     tools:context="itbenevides.com.bluetooth.BluetoothActivity">
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 
-        android:gravity="bottom|right"
         android:id="@+id/linearlayout1"
-        android:visibility="gone">
+        android:visibility="visible"
+        android:foregroundGravity="center_vertical|center_horizontal"
+        android:gravity="center_vertical|center_horizontal">
 
-        <ToggleButton
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="New ToggleButton"
-            android:id="@+id/toggleButton"
-            android:textOn="Client"
-            android:textOff="Server"
-            android:layout_alignTop="@+id/button"
-            android:layout_toLeftOf="@+id/button"
-            android:layout_toStartOf="@+id/button" />
+            android:layout_gravity="center_vertical"
+            android:gravity="center_horizontal">
 
-        <Button
-            android:layout_width="wrap_content"
+            <ImageView
+                android:layout_width="131dp"
+                android:layout_height="179dp"
+                android:id="@+id/imageView"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/btimg"
+                android:foregroundGravity="center_vertical|center|center_horizontal" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Iniciar"
-            android:id="@+id/button"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/textview_status" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|center_horizontal">
+
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New ToggleButton"
+                android:id="@+id/toggleButton"
+                android:textOn="Client"
+                android:textOff="Server"
+                android:layout_alignTop="@+id/button"
+                android:layout_toLeftOf="@+id/button"
+                android:layout_toStartOf="@+id/button" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Iniciar"
+                android:id="@+id/button"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -41,15 +71,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="bottom|right"
-        android:id="@+id/linearLayout2" >
+        android:id="@+id/linearLayout2"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:text="New Text"
-            android:id="@+id/textView"
             android:layout_gravity="top"
             android:gravity="bottom|right"
+            android:id="@+id/textview_msg"
             android:layout_weight="1" />
 
         <LinearLayout

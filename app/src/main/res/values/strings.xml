@@ -11,5 +11,14 @@
     <string name="alerta_celular_nao_suportado">Nenhum dispositivo encontrado.</string>
     <string name="alerta_ativar_bluetooth">Ative o Bluetooth do aparelho.</string>
     <string name="btenviar">Enviar</string>
+    <string name="status_iniciabt">Iniciando Bluetooth</string>
+    <string name="status_validandobt">Aparelho suportado</string>
+    <string name="status_verificandobt">Bluetooth Ativo</string>
+    <string name="status_carregandotipoclientbt">Client</string>
+    <string name="status_carregandotiposerverbt">Server</string>
+    <string name="status_aguardandodevicebt">Aguardando escolha de dispositivo</string>
+    <string name="status_pareandobt">Pareando com: </string>
+    <string name="status_conectandobt">Conectando com: </string>
+    <string name="status_conectadobt">Conectado  </string>
 
 </resources>
