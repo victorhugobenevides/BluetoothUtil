@@ -13,11 +13,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.SyncStateContract;
-import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -34,7 +29,6 @@ public class BluetoothUtil {
 
     private static BluetoothAdapter bluetoothAdapter;
 
-    private  int CODIGO_BLUETOOOTH_RESULT=999;
     public static  String TIPO_SERVIDOR="BTSERVER";
     public static  String TIPO_CLIENTE="BTCLIENT";
     public static  String STATUS_DESCONECTADO="BT0";
@@ -453,7 +447,7 @@ public class BluetoothUtil {
 
     }
 
-    public  void iniciaServer(){
+    public synchronized void iniciaServer(){
 
         new AcceptThreadServer().start();
 
@@ -461,7 +455,7 @@ public class BluetoothUtil {
 
     public  void iniciaCliente(BluetoothDevice bluetoothDevice){
 
-        bluetoothAdapter.cancelDiscovery();
+
         new ConnectThreadClient(bluetoothDevice).start();
     }
 
@@ -532,7 +526,7 @@ public class BluetoothUtil {
         public void run() {
             // Cancel discovery because it will slow down the connection
 
-
+            bluetoothAdapter.cancelDiscovery();
             try {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
@@ -655,7 +649,7 @@ public class BluetoothUtil {
 
         // new ConnectedThread(bluetoothSocket).start();
 
-        bluetoothAdapter.cancelDiscovery();
+
 
 
         BluetoothSocket mmSocket = bluetoothSocket;

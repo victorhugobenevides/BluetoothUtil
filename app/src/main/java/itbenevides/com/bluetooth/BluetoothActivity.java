@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,11 +19,12 @@ import android.widget.ToggleButton;
 
 public class BluetoothActivity extends ActionBarActivity {
     String tipo = BluetoothUtil.TIPO_SERVIDOR;
-    public static BluetoothUtil util=null;
+    public BluetoothUtil util=null;
 
     LinearLayout linearLayout1;
     LinearLayout linearLayout2;
     TextView txtmsg;
+    EditText etmsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +34,7 @@ public class BluetoothActivity extends ActionBarActivity {
 
         ToggleButton btTipo = (ToggleButton) findViewById(R.id.toggleButton);
          txtmsg=(TextView) findViewById(R.id.textview_msg);
+        etmsg=(EditText) findViewById(R.id.editText);
          linearLayout1 = (LinearLayout)findViewById(R.id.linearlayout1);
          linearLayout2 = (LinearLayout)findViewById(R.id.linearLayout2);
 
@@ -49,6 +52,23 @@ public class BluetoothActivity extends ActionBarActivity {
 
 
         Button btIniciar = (Button) findViewById(R.id.button);
+        final Button btenviar = (Button) findViewById(R.id.button2);
+        btenviar.setEnabled(false);
+
+
+        btenviar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(etmsg.getText().equals("")){
+                    Toast.makeText(getApplicationContext(),"Digite uma msg.",Toast.LENGTH_SHORT).show();
+                }else{
+                    util.enviaDado(etmsg.getText().toString());
+                    etmsg.setText("");
+                }
+
+
+            }
+        });
 
         btIniciar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,9 +82,15 @@ public class BluetoothActivity extends ActionBarActivity {
                             if(status[1].equals(BluetoothUtil.STATUS_CONECTANDO)){
                                 linearLayout1.setVisibility(View.GONE);
                                 linearLayout2.setVisibility(View.VISIBLE);
+                                txtmsg.setText(txtmsg.getText() + "\n" + status[0]);
+                                btenviar.setEnabled(false);
 
-                            }else  if(status[1].equals(BluetoothUtil.STATUS_CONECTADO)){
-                                txtmsg.setText(status[0]);
+
+                            }else if(status[1].equals(BluetoothUtil.STATUS_CONECTADO)){
+                                linearLayout1.setVisibility(View.GONE);
+                                linearLayout2.setVisibility(View.VISIBLE);
+                                txtmsg.setText(txtmsg.getText() + "\n" + status[0]);
+                                btenviar.setEnabled(true);
                             }
 
 
