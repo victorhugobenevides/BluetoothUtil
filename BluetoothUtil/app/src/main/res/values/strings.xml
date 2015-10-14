@@ -10,6 +10,5 @@
     <string name="alerta_zero_dipositivos_encontrado">Nenhum dispositivo encontrado.</string>
     <string name="alerta_celular_nao_suportado">Nenhum dispositivo encontrado.</string>
     <string name="alerta_ativar_bluetooth">Ative o Bluetooth do aparelho.</string>
-    <string name="btenviar">Enviar</string>
 
 </resources>
