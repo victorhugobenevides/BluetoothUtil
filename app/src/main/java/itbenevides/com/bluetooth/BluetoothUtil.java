@@ -71,12 +71,16 @@ public class BluetoothUtil {
         devices = new ArrayList<>();
 
 
+        try {
+            IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+            activity.registerReceiver(mReceiver, intent);
+        }catch (Exception e){
 
-        IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        activity.registerReceiver(mReceiver, intent);
-
+        }
 
         iniciaBluetoothAdapter();
+
+        ativaDescoberta(activity);
         enviaHandler(activity.getString(R.string.status_iniciabt),STATUS_DESCONECTADO);
 
 
@@ -86,10 +90,7 @@ public class BluetoothUtil {
 
         if(!ativaBluetooh(activity))
             throw new Exception(activity.getString(R.string.alerta_ativar_bluetooth));
-        enviaHandler(activity.getString(R.string.status_verificandobt),STATUS_DESCONECTADO);
-
-
-        ativaDescoberta(activity);
+        enviaHandler(activity.getString(R.string.status_verificandobt), STATUS_DESCONECTADO);
 
 
        carregaTipoUser(tipoUser, activity);
@@ -111,7 +112,7 @@ public class BluetoothUtil {
         if(!bluetoothAdapter.isDiscovering()){
             Intent discoverableIntent = new
                     Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
             activity.startActivity(discoverableIntent);
         }
 
@@ -256,10 +257,10 @@ public class BluetoothUtil {
         try {
             IntentFilter filter = new IntentFilter();
             filter.addAction(BluetoothDevice.ACTION_FOUND);
-            filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+           // filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
 
 
-            activity.getApplicationContext().registerReceiver(mReceiver, filter);
+            activity.getApplicationContext().registerReceiver(mReceiverfound, filter);
             if(bluetoothAdapter==null){
                 iniciaBluetoothAdapter();
             }
@@ -281,7 +282,7 @@ public class BluetoothUtil {
                 bluetoothAdapter.enable();
                 return false;
             }
-            bluetoothAdapter.startDiscovery();
+
             return true;
 
 
@@ -371,11 +372,13 @@ public class BluetoothUtil {
             }
             if(!tem){
                 enviaHandler(activity.getString(R.string.status_pareandobt)+device.getName(),STATUS_PAREANDO);
+
                 parearDevice(device);
 
 
             }else{
-                enviaHandler(activity.getString(R.string.status_conectandobt)+device.getName(),STATUS_CONECTANDO);
+                enviaHandler(activity.getString(R.string.status_conectandobt) + device.getName(), STATUS_CONECTANDO);
+
                 iniciaCliente(device);
             }
             return;
@@ -442,6 +445,11 @@ public class BluetoothUtil {
     }
     public  void parearDevice(BluetoothDevice device){
         try {
+            try {
+                activity.getApplicationContext().unregisterReceiver(mReceiverfound);
+            }catch (Exception e){
+
+            }
             Method method = device.getClass().getMethod("createBond", (Class[]) null);
             method.invoke(device, (Object[]) null);
         } catch (Exception e) {
@@ -461,6 +469,11 @@ public class BluetoothUtil {
 
     public  void iniciaCliente(BluetoothDevice bluetoothDevice){
 
+        try {
+            activity.getApplicationContext().unregisterReceiver(mReceiverfound);
+        }catch (Exception e){
+
+        }
 
         new ConnectThreadClient(bluetoothDevice).start();
     }
@@ -529,8 +542,11 @@ public class BluetoothUtil {
             // Cancel discovery because it will slow down the connection
         int TENTATIVASMAX=20;
         int tentativas =TENTATIVASMAX;
+
+
+
             while(tentativas>0){
-                bluetoothAdapter.startDiscovery();
+
                 try {
                     try {
                         BluetoothSocket tmp = null;
@@ -545,7 +561,7 @@ public class BluetoothUtil {
                 } catch (IOException connectException) {
                     // Unable to connect; close the socket and get out
 
-                    enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(tentativas-TENTATIVASMAX)+")",STATUS_CONECTANDO);
+                    enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(TENTATIVASMAX-tentativas)+")",STATUS_CONECTANDO);
                     tentativas--;
                     try {
                         sleep(1000);
@@ -554,7 +570,10 @@ public class BluetoothUtil {
                     }
                     continue;
                 }
-                bluetoothAdapter.cancelDiscovery();
+
+
+
+
                 if(dialog.isShowing()){
                     dialog.dismiss();
                 }
@@ -674,7 +693,9 @@ public class BluetoothUtil {
         // new ConnectedThread(bluetoothSocket).start();
 
 
-        while(true){
+        int TENTATIVASMAX=20;
+        int tentativas =TENTATIVASMAX;
+        while(tentativas>0){
             BluetoothSocket mmSocket = bluetoothSocket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
@@ -692,7 +713,7 @@ public class BluetoothUtil {
             int bytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs
-            enviaHandler(activity.getString(R.string.status_conectadobt),STATUS_CONECTADO);
+           // enviaHandler(activity.getString(R.string.status_conectadobt),STATUS_CONECTADO);
             while (true) try {
                 // Read from the InputStream
                 bytes = mmInStream.read(buffer);
@@ -705,6 +726,8 @@ public class BluetoothUtil {
 
                 enviaHandler(readMessage, STATUS_CONECTADO);
 
+                tentativas=TENTATIVASMAX;
+
 
             } catch (IOException e) {
 
@@ -712,6 +735,7 @@ public class BluetoothUtil {
 
             }
             try {
+                tentativas--;
                 sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -739,11 +763,12 @@ public class BluetoothUtil {
                 if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     enviaHandler(activity.getString(R.string.status_conectandobt)+device.getName(),STATUS_CONECTANDO);
+
                     iniciaCliente(device);
 
                 }
 
-            }else  if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+            }else  if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 // Obter o BluetoothDevice vindo pela Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // Adicionar o nome e endere�o ao array adapter para mostrar na ListView
@@ -763,6 +788,36 @@ public class BluetoothUtil {
 
         }
     };
+
+    private  final BroadcastReceiver mReceiverfound = new BroadcastReceiver() {
+
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+            // Quando um dispositivo for encontrado
+
+
+            if (BluetoothDevice.ACTION_FOUND.equals(action)&&bluetoothAdapter.isDiscovering()) {
+                // Obter o BluetoothDevice vindo pela Intent
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                // Adicionar o nome e endere�o ao array adapter para mostrar na ListView
+
+
+
+                if(device!=null){
+                    devices = adicionaDispositivos(device);
+                    mostraDisponiveis(devices, context);
+                }
+
+
+
+
+            }
+
+
+        }
+    };
+
     private  final BroadcastReceiver mReceiverStatusChange = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
