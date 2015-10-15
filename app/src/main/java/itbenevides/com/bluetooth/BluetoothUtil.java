@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static java.lang.Thread.sleep;
+
 
 public class BluetoothUtil {
 
@@ -45,6 +47,7 @@ public class BluetoothUtil {
     private static final String NAME = "BluetoothChatInsecure";
     private  Activity activity;
     private  String tipoUser="";
+    private AcceptThreadServer acceptThreadServer=null;
 
     private String statusstr;
 
@@ -449,7 +452,10 @@ public class BluetoothUtil {
 
     public synchronized void iniciaServer(){
 
-        new AcceptThreadServer().start();
+        if(acceptThreadServer!=null)acceptThreadServer.cancel();
+
+        acceptThreadServer=new AcceptThreadServer();
+        acceptThreadServer.start();
 
     }
 
@@ -506,41 +512,59 @@ public class BluetoothUtil {
         }
     }
     private  class ConnectThreadClient extends Thread {
-        private final BluetoothSocket mmSocket;
+        private BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
 
         public ConnectThreadClient(BluetoothDevice device) {
             // Use a temporary object that is later assigned to mmSocket,
             // because mmSocket is final
-            BluetoothSocket tmp = null;
+
             mmDevice = device;
 
             // Get a BluetoothSocket to connect with the given BluetoothDevice
-            try {
-                // MY_UUID is the app's UUID string, also used by the server code
-                tmp = device.createRfcommSocketToServiceRecord(UUIDBT);
-            } catch (IOException e) { }
-            mmSocket = tmp;
+
         }
 
         public void run() {
             // Cancel discovery because it will slow down the connection
-
-            bluetoothAdapter.cancelDiscovery();
-            try {
-                // Connect the device through the socket. This will block
-                // until it succeeds or throws an exception
-                mmSocket.connect();
-            } catch (IOException connectException) {
-                // Unable to connect; close the socket and get out
+        int TENTATIVASMAX=20;
+        int tentativas =TENTATIVASMAX;
+            while(tentativas>0){
+                bluetoothAdapter.startDiscovery();
                 try {
-                    mmSocket.close();
-                } catch (IOException closeException) { }
-                return;
+                    try {
+                        BluetoothSocket tmp = null;
+                        // MY_UUID is the app's UUID string, also used by the server code
+                        mmSocket = device.createRfcommSocketToServiceRecord(UUIDBT);
+                    } catch (IOException e) { }
+
+                    // Connect the device through the socket. This will block
+                    // until it succeeds or throws an exception
+                    mmSocket.connect();
+                    tentativas=TENTATIVASMAX;
+                } catch (IOException connectException) {
+                    // Unable to connect; close the socket and get out
+
+                    enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(tentativas-TENTATIVASMAX)+")",STATUS_CONECTANDO);
+                    tentativas--;
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    continue;
+                }
+                bluetoothAdapter.cancelDiscovery();
+                if(dialog.isShowing()){
+                    dialog.dismiss();
+                }
+                manageConnectedSocket(mmSocket);
             }
 
+
+
             // Do work to manage the connection (in a separate thread)
-            manageConnectedSocket(mmSocket);
+
         }
 
         /** Will cancel an in-progress connection, and close the socket */
@@ -650,28 +674,26 @@ public class BluetoothUtil {
         // new ConnectedThread(bluetoothSocket).start();
 
 
+        while(true){
+            BluetoothSocket mmSocket = bluetoothSocket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
 
-
-        BluetoothSocket mmSocket = bluetoothSocket;
-        InputStream tmpIn = null;
-        OutputStream tmpOut = null;
-
-        // Get the input and output streams, using temp objects because
-        // member streams are final
-        try {
-            tmpIn = mmSocket.getInputStream();
-            tmpOut = mmSocket.getOutputStream();
-        } catch (IOException e) { }
-
-          mmInStream = tmpIn;
-         mmOutStream = tmpOut;
-        byte[] buffer = new byte[8192];  // buffer store for the stream
-        int bytes; // bytes returned from read()
-
-        // Keep listening to the InputStream until an exception occurs
-        enviaHandler(activity.getString(R.string.status_conectadobt),STATUS_CONECTADO);
-        while (true) {
+            // Get the input and output streams, using temp objects because
+            // member streams are final
             try {
+                tmpIn = mmSocket.getInputStream();
+                tmpOut = mmSocket.getOutputStream();
+            } catch (IOException e) { }
+
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+            byte[] buffer = new byte[8192];  // buffer store for the stream
+            int bytes; // bytes returned from read()
+
+            // Keep listening to the InputStream until an exception occurs
+            enviaHandler(activity.getString(R.string.status_conectadobt),STATUS_CONECTADO);
+            while (true) try {
                 // Read from the InputStream
                 bytes = mmInStream.read(buffer);
                 // Send the obtained bytes to the UI activity
@@ -679,16 +701,24 @@ public class BluetoothUtil {
                             .sendToTarget();*/
 
 
+                String readMessage = new String(buffer, 0, bytes);
 
-                String readMessage = new String(buffer,0,bytes);
-
-                enviaHandler(readMessage,STATUS_CONECTADO);
+                enviaHandler(readMessage, STATUS_CONECTADO);
 
 
             } catch (IOException e) {
+
                 break;
+
             }
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         }
+
 
     }
 
