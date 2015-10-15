@@ -1,0 +1,23 @@
+﻿Revert "quinto commit"
+
+This reverts commit 1d6f1e982fa3c6cc580cfd94e452c73898f39e7a.
+
+Conflicts:
+	.idea/vcs.xml
+	app/src/main/java/itbenevides/com/bluetooth/BluetoothUtil.java
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Your branch is up-to-date with 'origin/master'.
+#
+# You are currently reverting commit 1d6f1e9.
+#
+# Changes to be committed:
+#	modified:   .idea/vcs.xml
+#	modified:   app/src/main/java/itbenevides/com/bluetooth/BluetoothActivity.java
+#	modified:   app/src/main/java/itbenevides/com/bluetooth/BluetoothUtil.java
+#	modified:   app/src/main/res/values/strings.xml
+#	deleted:    sh.exe.stackdump
+#
+

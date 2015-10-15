@@ -1,30 +1,30 @@
 package itbenevides.com.bluetooth;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Handler;
-import android.os.Message;
-import android.widget.Toast;
+        import android.app.Activity;
+        import android.app.AlertDialog;
+        import android.bluetooth.BluetoothAdapter;
+        import android.bluetooth.BluetoothDevice;
+        import android.bluetooth.BluetoothServerSocket;
+        import android.bluetooth.BluetoothSocket;
+        import android.content.BroadcastReceiver;
+        import android.content.Context;
+        import android.content.DialogInterface;
+        import android.content.Intent;
+        import android.content.IntentFilter;
+        import android.os.Handler;
+        import android.os.Message;
+        import android.widget.Toast;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+        import java.io.IOException;
+        import java.io.InputStream;
+        import java.io.OutputStream;
+        import java.lang.reflect.Method;
+        import java.util.ArrayList;
+        import java.util.List;
+        import java.util.Set;
+        import java.util.UUID;
 
-import static java.lang.Thread.sleep;
+        import static java.lang.Thread.sleep;
 
 
 public class BluetoothUtil {
@@ -71,16 +71,12 @@ public class BluetoothUtil {
         devices = new ArrayList<>();
 
 
-        try {
-            IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-            activity.registerReceiver(mReceiver, intent);
-        }catch (Exception e){
 
-        }
+        IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        activity.registerReceiver(mReceiver, intent);
+
 
         iniciaBluetoothAdapter();
-
-        ativaDescoberta(activity);
         enviaHandler(activity.getString(R.string.status_iniciabt),STATUS_DESCONECTADO);
 
 
@@ -90,10 +86,13 @@ public class BluetoothUtil {
 
         if(!ativaBluetooh(activity))
             throw new Exception(activity.getString(R.string.alerta_ativar_bluetooth));
-        enviaHandler(activity.getString(R.string.status_verificandobt), STATUS_DESCONECTADO);
+        enviaHandler(activity.getString(R.string.status_verificandobt),STATUS_DESCONECTADO);
 
 
-       carregaTipoUser(tipoUser, activity);
+        ativaDescoberta(activity);
+
+
+        carregaTipoUser(tipoUser, activity);
 
 
 
@@ -112,7 +111,7 @@ public class BluetoothUtil {
         if(!bluetoothAdapter.isDiscovering()){
             Intent discoverableIntent = new
                     Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
             activity.startActivity(discoverableIntent);
         }
 
@@ -174,7 +173,7 @@ public class BluetoothUtil {
 
     }
 
-     public  Boolean suportaBluetooth(){
+    public  Boolean suportaBluetooth(){
 
         try {
             if(bluetoothAdapter==null){
@@ -235,13 +234,13 @@ public class BluetoothUtil {
     private  List<BluetoothDevice> adicionaDispositivos(BluetoothDevice device){
 
 
-            for(BluetoothDevice device2:devices){
-                if(device.getAddress().equals(device2.getAddress())){
-                    devices.remove(device2);
-                    break;
-                }
-
+        for(BluetoothDevice device2:devices){
+            if(device.getAddress().equals(device2.getAddress())){
+                devices.remove(device2);
+                break;
             }
+
+        }
 
         if(device!=null){
             devices.add(device);
@@ -257,7 +256,7 @@ public class BluetoothUtil {
         try {
             IntentFilter filter = new IntentFilter();
             filter.addAction(BluetoothDevice.ACTION_FOUND);
-           // filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+            filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
 
 
             activity.getApplicationContext().registerReceiver(mReceiverfound, filter);
@@ -282,7 +281,7 @@ public class BluetoothUtil {
                 bluetoothAdapter.enable();
                 return false;
             }
-
+            bluetoothAdapter.startDiscovery();
             return true;
 
 
@@ -314,13 +313,13 @@ public class BluetoothUtil {
 
         try {
             if(builder==null)
-            builder = new AlertDialog.Builder(activity);
+                builder = new AlertDialog.Builder(activity);
 
-           if(dialog!=null&&dialog.isShowing()){
+            if(dialog!=null&&dialog.isShowing()){
 
 
 
-               dialog.dismiss();
+                dialog.dismiss();
             }
 
 
@@ -372,13 +371,11 @@ public class BluetoothUtil {
             }
             if(!tem){
                 enviaHandler(activity.getString(R.string.status_pareandobt)+device.getName(),STATUS_PAREANDO);
-
                 parearDevice(device);
 
 
             }else{
-                enviaHandler(activity.getString(R.string.status_conectandobt) + device.getName(), STATUS_CONECTANDO);
-
+                enviaHandler(activity.getString(R.string.status_conectandobt)+device.getName(),STATUS_CONECTANDO);
                 iniciaCliente(device);
             }
             return;
@@ -386,7 +383,7 @@ public class BluetoothUtil {
 
 
 
-    dialog.dismiss();
+        dialog.dismiss();
     }
 
     private  void mostraDisponiveis(final List<BluetoothDevice> bluetoothDevices, final Activity activity){
@@ -394,7 +391,7 @@ public class BluetoothUtil {
         try {
 
             if(builder==null)
-            builder = new AlertDialog.Builder(activity);
+                builder = new AlertDialog.Builder(activity);
 
 
             if(dialog!=null&&dialog.isShowing()){
@@ -445,11 +442,14 @@ public class BluetoothUtil {
     }
     public  void parearDevice(BluetoothDevice device){
         try {
-            try {
-                activity.getApplicationContext().unregisterReceiver(mReceiverfound);
-            }catch (Exception e){
+            activity.getApplicationContext().unregisterReceiver(mReceiverfound);
+        }catch (Exception e){
 
-            }
+        }
+
+
+
+        try {
             Method method = device.getClass().getMethod("createBond", (Class[]) null);
             method.invoke(device, (Object[]) null);
         } catch (Exception e) {
@@ -540,13 +540,10 @@ public class BluetoothUtil {
 
         public void run() {
             // Cancel discovery because it will slow down the connection
-        int TENTATIVASMAX=20;
-        int tentativas =TENTATIVASMAX;
-
-
-
+            int TENTATIVASMAX=20;
+            int tentativas =TENTATIVASMAX;
             while(tentativas>0){
-
+                bluetoothAdapter.startDiscovery();
                 try {
                     try {
                         BluetoothSocket tmp = null;
@@ -561,7 +558,7 @@ public class BluetoothUtil {
                 } catch (IOException connectException) {
                     // Unable to connect; close the socket and get out
 
-                    enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(TENTATIVASMAX-tentativas)+")",STATUS_CONECTANDO);
+                    enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(tentativas-TENTATIVASMAX)+")",STATUS_CONECTANDO);
                     tentativas--;
                     try {
                         sleep(1000);
@@ -570,10 +567,7 @@ public class BluetoothUtil {
                     }
                     continue;
                 }
-
-
-
-
+                bluetoothAdapter.cancelDiscovery();
                 if(dialog.isShowing()){
                     dialog.dismiss();
                 }
@@ -692,8 +686,7 @@ public class BluetoothUtil {
 
         // new ConnectedThread(bluetoothSocket).start();
 
-
-        int TENTATIVASMAX=20;
+        int TENTATIVASMAX=3;
         int tentativas =TENTATIVASMAX;
         while(tentativas>0){
             BluetoothSocket mmSocket = bluetoothSocket;
@@ -713,7 +706,13 @@ public class BluetoothUtil {
             int bytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs
-           // enviaHandler(activity.getString(R.string.status_conectadobt),STATUS_CONECTADO);
+            if(tentativas==TENTATIVASMAX)
+            enviaHandler(activity.getString(R.string.status_conectadobt),STATUS_CONECTADO);
+            else
+                enviaHandler(activity.getString(R.string.status_reconectadobt),STATUS_CONECTANDO);
+
+
+
             while (true) try {
                 // Read from the InputStream
                 bytes = mmInStream.read(buffer);
@@ -727,15 +726,12 @@ public class BluetoothUtil {
                 enviaHandler(readMessage, STATUS_CONECTADO);
 
                 tentativas=TENTATIVASMAX;
-
-
             } catch (IOException e) {
-
+                tentativas--;
                 break;
 
             }
             try {
-                tentativas--;
                 sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -763,25 +759,9 @@ public class BluetoothUtil {
                 if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     enviaHandler(activity.getString(R.string.status_conectandobt)+device.getName(),STATUS_CONECTANDO);
-
                     iniciaCliente(device);
 
                 }
-
-            }else  if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                // Obter o BluetoothDevice vindo pela Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                // Adicionar o nome e endere�o ao array adapter para mostrar na ListView
-
-
-
-                if(device!=null){
-                    devices = adicionaDispositivos(device);
-                    mostraDisponiveis(devices, context);
-                }
-
-
-
 
             }
 
@@ -797,7 +777,7 @@ public class BluetoothUtil {
             // Quando um dispositivo for encontrado
 
 
-            if (BluetoothDevice.ACTION_FOUND.equals(action)&&bluetoothAdapter.isDiscovering()) {
+           if (BluetoothDevice.ACTION_FOUND.equals(action)&&bluetoothAdapter.isDiscovering()) {
                 // Obter o BluetoothDevice vindo pela Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // Adicionar o nome e endere�o ao array adapter para mostrar na ListView
@@ -817,6 +797,7 @@ public class BluetoothUtil {
 
         }
     };
+
 
     private  final BroadcastReceiver mReceiverStatusChange = new BroadcastReceiver() {
 
@@ -872,6 +853,7 @@ public class BluetoothUtil {
         handler.sendMessage(msg);
     }
 };
+
 
 
 
