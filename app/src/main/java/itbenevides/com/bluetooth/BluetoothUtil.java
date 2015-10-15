@@ -108,12 +108,18 @@ public class BluetoothUtil {
 
     public void ativaDescoberta(Activity activity){
 
-        if(!bluetoothAdapter.isDiscovering()){
-            Intent discoverableIntent = new
-                    Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            activity.startActivity(discoverableIntent);
+        try {
+
+                Intent discoverableIntent = new
+                        Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+                activity.startActivity(discoverableIntent);
+
+        }catch (Exception e){
+
         }
+
+
 
 
 
@@ -480,39 +486,57 @@ public class BluetoothUtil {
 
 
     private  class AcceptThreadServer extends Thread {
-        private final BluetoothServerSocket mmServerSocket;
+        private BluetoothServerSocket mmServerSocket;
 
         public AcceptThreadServer() {
             // Use a temporary object that is later assigned to mmServerSocket,
             // because mmServerSocket is final
-            BluetoothServerSocket tmp = null;
-            try {
-                // MY_UUID is the app's UUID string, also used by the client code
-                tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME,UUIDBT);
-            } catch (IOException e) { }
-            mmServerSocket = tmp;
+
         }
 
         public void run() {
             BluetoothSocket socket = null;
             // Keep listening until exception occurs or a socket is returned
-            while (true) {
+            enviaHandler(activity.getString(R.string.status_conectando_clibt),STATUS_CONECTANDO);
+            int TENTATIVASMAX=20;
+            int tentativas =TENTATIVASMAX;
+            while (tentativas>0) {
+
+                bluetoothAdapter.startDiscovery();
+                BluetoothServerSocket tmp = null;
+                try {
+                    // MY_UUID is the app's UUID string, also used by the client code
+
+                    tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME,UUIDBT);
+                } catch (IOException e) { }
+                mmServerSocket = tmp;
+
 
                 try {
                     socket = mmServerSocket.accept();
+                    tentativas=TENTATIVASMAX;
                 } catch (IOException e) {
-                    break;
+
+                    if(tentativas==TENTATIVASMAX)ativaDescoberta(activity);
+
+                    tentativas--;
+
+                    enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(TENTATIVASMAX-tentativas)+")",STATUS_CONECTANDO);
+
+                    continue;
                 }
                 // If a connection was accepted
                 if (socket != null) {
                     // Do work to manage the connection (in a separate thread)
                     manageConnectedSocket(socket);
+
                     try {
                         mmServerSocket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
                     }
-                    break;
+
+
                 }
             }
         }

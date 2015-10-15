@@ -19,6 +19,7 @@
     <string name="status_aguardandodevicebt">Aguardando escolha de dispositivo</string>
     <string name="status_pareandobt">Pareando com: </string>
     <string name="status_conectandobt">Conectando com: </string>
+    <string name="status_conectando_clibt">Conectando com cliente </string>
     <string name="status_conectadobt">Conectado  </string>
     <string name="status_reconectadobt">Falha na conexão, tentando reconectar</string>
 
