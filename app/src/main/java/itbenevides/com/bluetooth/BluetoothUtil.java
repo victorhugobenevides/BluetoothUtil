@@ -47,7 +47,10 @@ public class BluetoothUtil {
     private static final String NAME = "BluetoothChatInsecure";
     private  Activity activity;
     private  String tipoUser="";
+
+    private ConnectThreadClient connectThreadClient=null;
     private AcceptThreadServer acceptThreadServer=null;
+    private BluetoothServerSocket mmServerSocket=null;
 
     private String statusstr;
 
@@ -55,6 +58,7 @@ public class BluetoothUtil {
     private OutputStream mmOutStream = null;
 
     private Handler handler  =null;
+    private  Boolean cancel=false;
 
 
 
@@ -69,7 +73,7 @@ public class BluetoothUtil {
         this.tipoUser=tipoUser;
         this.handler=handler;
         devices = new ArrayList<>();
-
+        cancel=false;
 
 
         IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
@@ -265,7 +269,7 @@ public class BluetoothUtil {
             filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
 
 
-            activity.getApplicationContext().registerReceiver(mReceiverfound, filter);
+
             if(bluetoothAdapter==null){
                 iniciaBluetoothAdapter();
             }
@@ -481,12 +485,13 @@ public class BluetoothUtil {
 
         }
 
-        new ConnectThreadClient(bluetoothDevice).start();
+        connectThreadClient=new ConnectThreadClient(bluetoothDevice);
+        connectThreadClient.start();
     }
 
 
     private  class AcceptThreadServer extends Thread {
-        private BluetoothServerSocket mmServerSocket;
+
 
         public AcceptThreadServer() {
             // Use a temporary object that is later assigned to mmServerSocket,
@@ -499,9 +504,10 @@ public class BluetoothUtil {
             // Keep listening until exception occurs or a socket is returned
             enviaHandler(activity.getString(R.string.status_conectando_clibt),STATUS_CONECTANDO);
             int TENTATIVASMAX=20;
+            if(cancel)return;
             int tentativas =TENTATIVASMAX;
             while (tentativas>0) {
-
+                if(cancel)break;
                 bluetoothAdapter.startDiscovery();
                 BluetoothServerSocket tmp = null;
                 try {
@@ -531,6 +537,7 @@ public class BluetoothUtil {
                     manageConnectedSocket(socket);
 
                     try {
+                        if(mmServerSocket!=null)
                         mmServerSocket.close();
                     } catch (IOException e1) {
                         e1.printStackTrace();
@@ -544,6 +551,7 @@ public class BluetoothUtil {
         /** Will cancel the listening socket, and cause the thread to finish */
         public void cancel() {
             try {
+                if(mmServerSocket!=null)
                 mmServerSocket.close();
             } catch (IOException e) { }
         }
@@ -565,37 +573,48 @@ public class BluetoothUtil {
         public void run() {
             // Cancel discovery because it will slow down the connection
             int TENTATIVASMAX=20;
+            if(cancel)return;
             int tentativas =TENTATIVASMAX;
+
+
             while(tentativas>0){
-                bluetoothAdapter.startDiscovery();
+                if(cancel)break;
+
                 try {
+                    bluetoothAdapter.startDiscovery();
                     try {
-                        BluetoothSocket tmp = null;
-                        // MY_UUID is the app's UUID string, also used by the server code
-                        mmSocket = device.createRfcommSocketToServiceRecord(UUIDBT);
-                    } catch (IOException e) { }
+                        try {
+                            BluetoothSocket tmp = null;
+                            // MY_UUID is the app's UUID string, also used by the server code
+                            mmSocket = device.createRfcommSocketToServiceRecord(UUIDBT);
+                        } catch (IOException e) { }
 
-                    // Connect the device through the socket. This will block
-                    // until it succeeds or throws an exception
-                    mmSocket.connect();
-                    tentativas=TENTATIVASMAX;
-                } catch (IOException connectException) {
-                    // Unable to connect; close the socket and get out
+                        // Connect the device through the socket. This will block
+                        // until it succeeds or throws an exception
+                        mmSocket.connect();
+                        tentativas=TENTATIVASMAX;
+                    } catch (IOException connectException) {
+                        // Unable to connect; close the socket and get out
 
-                    enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(tentativas-TENTATIVASMAX)+")",STATUS_CONECTANDO);
-                    tentativas--;
-                    try {
-                        sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        enviaHandler("conexão falhou, tentando conectar novamente...("+String.valueOf(tentativas-TENTATIVASMAX)+")",STATUS_CONECTANDO);
+                        tentativas--;
+                        try {
+                            sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        continue;
                     }
-                    continue;
+                    bluetoothAdapter.cancelDiscovery();
+                    if(dialog.isShowing()){
+                        dialog.dismiss();
+                    }
+                    manageConnectedSocket(mmSocket);
+                }catch (Exception e){
+
                 }
-                bluetoothAdapter.cancelDiscovery();
-                if(dialog.isShowing()){
-                    dialog.dismiss();
-                }
-                manageConnectedSocket(mmSocket);
+
+
             }
 
 
@@ -612,107 +631,18 @@ public class BluetoothUtil {
         }
     }
 
-    private  class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
 
-        public ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            // Get the input and output streams, using temp objects because
-            // member streams are final
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-
-
-            byte[] buffer = new byte[1024];  // buffer store for the stream
-            int bytes; // bytes returned from read()
-
-            // Keep listening to the InputStream until an exception occurs
-            while (true) {
-                try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    // Send the obtained bytes to the UI activity
-                    /*mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();*/
-
-
-
-
-
-
-                    String readMessage = new String(buffer,0,bytes);
-
-                    enviaHandler(readMessage,STATUS_CONECTADO);
-
-
-
-                } catch (IOException e) {
-                    break;
-                }
-            }
-
-        }
-
-        public void run() {
-            byte[] buffer = new byte[1024];  // buffer store for the stream
-            int bytes; // bytes returned from read()
-
-            // Keep listening to the InputStream until an exception occurs
-            while (true) {
-                try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    // Send the obtained bytes to the UI activity
-                    /*mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();*/
-
-
-
-                    String readMessage = new String(buffer,0,bytes);
-
-                    enviaHandler(readMessage,STATUS_CONECTADO);
-
-
-
-                } catch (IOException e) {
-                    break;
-                }
-            }
-        }
-
-        /* Call this from the main activity to send data to the remote device */
-        public void write(byte[] bytes) {
-            try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) { }
-        }
-
-        /* Call this from the main activity to shutdown the connection */
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) { }
-        }
-    }
 
 
     private  void manageConnectedSocket(BluetoothSocket bluetoothSocket){
 
         // new ConnectedThread(bluetoothSocket).start();
 
-        int TENTATIVASMAX=3;
+        int TENTATIVASMAX=2;
+        if(cancel)TENTATIVASMAX=0;
         int tentativas =TENTATIVASMAX;
         while(tentativas>0){
+            if(cancel)break;
             BluetoothSocket mmSocket = bluetoothSocket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
@@ -739,17 +669,21 @@ public class BluetoothUtil {
 
             while (true) try {
                 // Read from the InputStream
-                bytes = mmInStream.read(buffer);
+
+
                 // Send the obtained bytes to the UI activity
                     /*mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
                             .sendToTarget();*/
 
 
-                String readMessage = new String(buffer, 0, bytes);
+                    bytes = mmInStream.read(buffer);
+                    String readMessage = new String(buffer, 0, bytes);
 
-                enviaHandler(readMessage, STATUS_CONECTADO);
+                    enviaHandler(readMessage, STATUS_CONECTADO);
 
-                tentativas=TENTATIVASMAX;
+                    tentativas=TENTATIVASMAX;
+
+
             } catch (IOException e) {
                 tentativas--;
                 break;
@@ -832,8 +766,9 @@ public class BluetoothUtil {
             if(BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)){
 
                 if(ativaBluetooh(activity)){
-                    enviaHandler(activity.getString(R.string.status_verificandobt)+device.getName(),STATUS_DESCONECTADO);
+                   // enviaHandler(activity.getString(R.string.status_verificandobt)+device.getName(),STATUS_DESCONECTADO);
                     carregaTipoUser(tipoUser, activity);
+                    context.unregisterReceiver(mReceiverStatusChange);
                 }
 
 
@@ -868,14 +803,56 @@ public class BluetoothUtil {
         return handler;
     }
     private void enviaHandler(String str,String status){
+        if(handler!=null){
+            Message msg = handler.obtainMessage();
+            String[] messageString = new String[2];
+            messageString[0]=str;
+            messageString[1]=status;
+            msg.obj=messageString;
+            handler.sendMessage(msg);
+        }
 
-        Message msg = handler.obtainMessage();
-        String[] messageString = new String[2];
-        messageString[0]=str;
-        messageString[1]=status;
-        msg.obj=messageString;
-        handler.sendMessage(msg);
+
     }
+
+
+    @Override
+    protected void finalize() throws Throwable {
+
+        super.finalize();
+
+
+
+        if(acceptThreadServer!=null)acceptThreadServer.cancel();
+        if(connectThreadClient!=null)connectThreadClient.cancel();
+
+
+        if (mmInStream != null) {
+            try {mmInStream.close();} catch (Exception e) {}
+            mmInStream = null;
+        }
+
+        if (mmOutStream != null) {
+            try {mmOutStream.close();} catch (Exception e) {}
+            mmOutStream = null;
+        }
+
+        if (mmServerSocket != null) {
+            try {mmServerSocket.close();} catch (Exception e) {}
+            mmServerSocket = null;
+        }
+
+        if(handler!=null){
+            handler=null;
+        }
+
+
+        cancel=true;
+
+
+
+    }
+
 };
 
 

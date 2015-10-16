@@ -25,6 +25,7 @@ public class BluetoothActivity extends ActionBarActivity {
     LinearLayout linearLayout2;
     TextView txtmsg;
     EditText etmsg;
+    Button btenviar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,7 @@ public class BluetoothActivity extends ActionBarActivity {
 
 
         Button btIniciar = (Button) findViewById(R.id.button);
-        final Button btenviar = (Button) findViewById(R.id.button2);
+         btenviar = (Button) findViewById(R.id.button2);
         btenviar.setEnabled(false);
 
 
@@ -74,6 +75,8 @@ public class BluetoothActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 try {
+
+
                     util = new BluetoothUtil(BluetoothActivity.this,tipo,new Handler() {
                         @Override
                         public void handleMessage(Message msg) {
@@ -103,6 +106,32 @@ public class BluetoothActivity extends ActionBarActivity {
                 }
             }
         });
+
+
+
+
+
+    }
+
+    @Override
+    public void onBackPressed() {
+
+
+        if(linearLayout1!=null){
+            if(linearLayout1.getVisibility()==View.GONE){
+                linearLayout1.setVisibility(View.VISIBLE);
+                linearLayout2.setVisibility(View.GONE);
+                txtmsg.setText("");
+                btenviar.setEnabled(false);
+                try {
+                    util.finalize();
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }else{
+                finish();
+            }
+        }
 
 
 

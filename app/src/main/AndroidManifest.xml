@@ -4,13 +4,15 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/btimg"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
 
         <activity
             android:name=".BluetoothActivity"
             android:screenOrientation="portrait"
+            android:icon="@drawable/btimg"
+
             android:label="@string/title_activity_bluetooth" android:exported="true" android:noHistory="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
