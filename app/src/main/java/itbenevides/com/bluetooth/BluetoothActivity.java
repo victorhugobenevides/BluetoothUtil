@@ -64,6 +64,7 @@ public class BluetoothActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(),"Digite uma msg.",Toast.LENGTH_SHORT).show();
                 }else{
                     util.enviaDado(etmsg.getText().toString());
+                    txtmsg.setText(txtmsg.getText() + "\n" + "Você: "+etmsg.getText().toString());
                     etmsg.setText("");
                 }
 
