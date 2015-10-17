@@ -19,7 +19,7 @@ import android.widget.ToggleButton;
 
 public class BluetoothActivity extends ActionBarActivity {
     String tipo = BluetoothUtil.TIPO_SERVIDOR;
-    public BluetoothUtil util=null;
+    public static BluetoothUtil util=null;
 
     LinearLayout linearLayout1;
     LinearLayout linearLayout2;
@@ -60,12 +60,18 @@ public class BluetoothActivity extends ActionBarActivity {
         btenviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(etmsg.getText().equals("")){
-                    Toast.makeText(getApplicationContext(),"Digite uma msg.",Toast.LENGTH_SHORT).show();
-                }else{
-                    util.enviaDado(etmsg.getText().toString());
-                    etmsg.setText("");
+                try {
+                    if(etmsg.getText().equals("")){
+                        Toast.makeText(getApplicationContext(),"Digite uma msg.",Toast.LENGTH_SHORT).show();
+                    }else{
+                        util.enviaDado(etmsg.getText().toString());
+                        txtmsg.setText( txtmsg.getText() + "\n" + "Você: " +etmsg.getText().toString());
+                        etmsg.setText("");
+                    }
+                }catch (Exception e){
+
                 }
+
 
 
             }
@@ -85,6 +91,7 @@ public class BluetoothActivity extends ActionBarActivity {
                             if(status[1].equals(BluetoothUtil.STATUS_CONECTANDO)){
                                 linearLayout1.setVisibility(View.GONE);
                                 linearLayout2.setVisibility(View.VISIBLE);
+
                                 txtmsg.setText(txtmsg.getText() + "\n" + status[0]);
                                 btenviar.setEnabled(false);
 
@@ -92,7 +99,12 @@ public class BluetoothActivity extends ActionBarActivity {
                             }else if(status[1].equals(BluetoothUtil.STATUS_CONECTADO)){
                                 linearLayout1.setVisibility(View.GONE);
                                 linearLayout2.setVisibility(View.VISIBLE);
-                                txtmsg.setText(txtmsg.getText() + "\n" + status[0]);
+                                txtmsg.setText(txtmsg.getText() + "\n " + status[0]);
+                                btenviar.setEnabled(true);
+                            }else if(status[1].equals(BluetoothUtil.STATUS_COMUNICANDO)){
+                                linearLayout1.setVisibility(View.GONE);
+                                linearLayout2.setVisibility(View.VISIBLE);
+                                txtmsg.setText(txtmsg.getText() + "\n " + "Outro: " + status[0]);
                                 btenviar.setEnabled(true);
                             }
 
