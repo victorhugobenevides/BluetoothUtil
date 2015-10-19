@@ -90,7 +90,7 @@ public class BluetoothActivity extends ActionBarActivity {
                         public void handleMessage(Message msg) {
                             String[] status = (String[]) msg.obj;
 
-                            if(status[1].equals(BluetoothUtil.STATUS_CONECTANDO)){
+                            if(status[1].equals(BluetoothUtil.STATUS_CONECTANDO)||status[1].equals(BluetoothUtil.STATUS_PAREANDO)){
                                 linearLayout1.setVisibility(View.GONE);
                                 linearLayout2.setVisibility(View.VISIBLE);
 
@@ -98,15 +98,10 @@ public class BluetoothActivity extends ActionBarActivity {
                                 btenviar.setEnabled(false);
 
 
-                            }else if(status[1].equals(BluetoothUtil.STATUS_CONECTADO)){
+                            }else if(status[1].equals(BluetoothUtil.STATUS_CONECTADO)||status[1].equals(BluetoothUtil.STATUS_COMUNICANDO)){
                                 linearLayout1.setVisibility(View.GONE);
                                 linearLayout2.setVisibility(View.VISIBLE);
                                 txtmsg.setText(txtmsg.getText() + "\n " + status[0]);
-                                btenviar.setEnabled(true);
-                            }else if(status[1].equals(BluetoothUtil.STATUS_COMUNICANDO)){
-                                linearLayout1.setVisibility(View.GONE);
-                                linearLayout2.setVisibility(View.VISIBLE);
-                                txtmsg.setText(txtmsg.getText() + "\n " + "Outro: " + status[0]);
                                 btenviar.setEnabled(true);
                             }
 
