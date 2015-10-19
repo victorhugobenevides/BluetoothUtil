@@ -39,6 +39,10 @@ public class BluetoothUtil {
     public static  String STATUS_CONECTANDO="BT1";
     public static  String STATUS_CONECTADO="BT2";
     public static  String STATUS_PAREANDO="BT3";
+
+
+
+    public static  String STATUS_COMUNICANDO="BT4";
     //dialog para criação de lista de dispositivos
     private  AlertDialog.Builder builder;
     private  AlertDialog dialog;
@@ -91,6 +95,7 @@ public class BluetoothUtil {
 
 
         iniciaBluetoothAdapter();
+
         enviaHandler("-> "+activity.getString(R.string.status_iniciabt),STATUS_DESCONECTADO);
 
 
@@ -101,6 +106,7 @@ public class BluetoothUtil {
         if(!ativaBluetooh(activity))
             throw new Exception(activity.getString(R.string.alerta_ativar_bluetooth));
         enviaHandler("-> "+activity.getString(R.string.status_verificandobt),STATUS_DESCONECTADO);
+
 
 
         ativaDescoberta(activity);
@@ -144,11 +150,13 @@ public class BluetoothUtil {
     private  void carregaTipoUser(String tipoUser,Activity activity){
 
         if(tipoUser.equals(BluetoothUtil.TIPO_CLIENTE)){
+
             enviaHandler("-> "+activity.getString(R.string.status_carregandotipoclientbt),STATUS_DESCONECTADO);
             listaDispositivos(activity);
 
         }else if(tipoUser.equals(BluetoothUtil.TIPO_SERVIDOR)){
             enviaHandler("-> "+activity.getString(R.string.status_carregandotiposerverbt),STATUS_DESCONECTADO);
+
             iniciaServer();
 
         }
@@ -158,7 +166,9 @@ public class BluetoothUtil {
 
         try{
 
+
             enviaHandler("-> "+activity.getString(R.string.status_aguardandodevicebt),STATUS_DESCONECTADO);
+
             Set<BluetoothDevice> devicesSet = carregaPareados();
 
 
@@ -296,8 +306,9 @@ public class BluetoothUtil {
             if(bluetoothAdapter==null){
                 iniciaBluetoothAdapter();
             }
-            activity.getApplicationContext().registerReceiver(mReceiverStatusChange, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+
             if (!bluetoothAdapter.isEnabled()) {
+                activity.getApplicationContext().registerReceiver(mReceiverStatusChange, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
                 bluetoothAdapter.enable();
                 return false;
             }
@@ -390,12 +401,16 @@ public class BluetoothUtil {
                 }
             }
             if(!tem){
+
                 enviaHandler("-> "+activity.getString(R.string.status_pareandobt)+device.getName(),STATUS_PAREANDO);
+
                 parearDevice(device);
 
 
             }else{
+
                 enviaHandler("-> "+activity.getString(R.string.status_conectandobt)+device.getName(),STATUS_CONECTANDO);
+
                 iniciaCliente(device);
             }
             return;
@@ -512,7 +527,9 @@ public class BluetoothUtil {
         public void run() {
             BluetoothSocket socket = null;
             // Keep listening until exception occurs or a socket is returned
+
             enviaHandler("-> "+activity.getString(R.string.status_conectando_clibt),STATUS_CONECTANDO);
+
             int TENTATIVASMAX=20;
             if(cancel)return;
             int tentativas =TENTATIVASMAX;
@@ -531,22 +548,28 @@ public class BluetoothUtil {
                 try {
                     if(mmServerSocket!=null){
                         socket = mmServerSocket.accept();
+
                     }else{
                         tentativas--;
 
                         enviaHandler("-> "+"conexão falhou, tentando conectar novamente...("+String.valueOf(TENTATIVASMAX-tentativas)+")",STATUS_CONECTANDO);
 
+
                         continue;
                     }
 
+
                     tentativas=TENTATIVASMAX;
+
                 } catch (IOException e) {
 
                     if(tentativas==TENTATIVASMAX)ativaDescoberta(activity);
 
                     tentativas--;
 
+
                     enviaHandler("-> "+"conexão falhou, tentando conectar novamente...("+String.valueOf(TENTATIVASMAX-tentativas)+")",STATUS_CONECTANDO);
+
 
                     continue;
                 }
@@ -610,12 +633,20 @@ public class BluetoothUtil {
 
                         // Connect the device through the socket. This will block
                         // until it succeeds or throws an exception
-                        mmSocket.connect();
-                        tentativas=TENTATIVASMAX;
+                        if(mmSocket!=null){
+                            mmSocket.connect();
+                            tentativas=TENTATIVASMAX;
+                        }else{
+                            enviaHandler("->"+"conexão falhou, tentando conectar novamente...("+String.valueOf(tentativas-TENTATIVASMAX)+")",STATUS_CONECTANDO);
+                            tentativas--;
+                            continue;
+                        }
+
                     } catch (IOException connectException) {
                         // Unable to connect; close the socket and get out
 
                         enviaHandler("-> "+"conexão falhou, tentando conectar novamente...("+String.valueOf(TENTATIVASMAX-tentativas)+")",STATUS_CONECTANDO);
+
                         tentativas--;
                         try {
                             sleep(1000);
@@ -680,9 +711,11 @@ public class BluetoothUtil {
 
             // Keep listening to the InputStream until an exception occurs
             if(tentativas==TENTATIVASMAX)
+
             enviaHandler("-> "+activity.getString(R.string.status_conectadobt),STATUS_CONECTADO);
             else
                 enviaHandler("-> "+activity.getString(R.string.status_reconectadobt),STATUS_CONECTANDO);
+
 
 
 
@@ -699,11 +732,13 @@ public class BluetoothUtil {
                     String readMessage = new String(buffer, 0, bytes);
 
 
+
                 if(TIPO_CLIENTE.equals(tipoUser)){
                     enviaHandler("Servidor: "+readMessage, STATUS_CONECTADO);
                 }else if(TIPO_SERVIDOR.equals(tipoUser)){
                     enviaHandler("Cliente: "+readMessage, STATUS_CONECTADO);
                 }
+
 
 
 
@@ -742,7 +777,9 @@ public class BluetoothUtil {
 
                 if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
                     enviaHandler("-> "+activity.getString(R.string.status_conectandobt)+device.getName(),STATUS_CONECTANDO);
+
                     iniciaCliente(device);
 
                 }
@@ -818,8 +855,7 @@ public class BluetoothUtil {
         if(mmOutStream==null)return;
 
         try {
-
-            mmOutStream.write(dado.getBytes());
+            mmOutStream.write((dado).getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
