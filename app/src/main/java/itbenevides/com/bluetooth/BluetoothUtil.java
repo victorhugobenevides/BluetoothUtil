@@ -809,13 +809,6 @@ public class BluetoothUtil {
             }
         }
     };
-    public  BluetoothDevice getDevice() {
-        return device;
-    }
-
-    private  void setDevice(BluetoothDevice device) {
-        BluetoothUtil.device = device;
-    }
 
     public void enviaDado(String dado){
 
@@ -897,6 +890,27 @@ public class BluetoothUtil {
 
 
         super.finalize();
+    }
+
+
+    public Activity getActivity() {
+        return activity;
+    }
+
+    public void setActivity(Activity activity) {
+        this.activity = activity;
+    }
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
+    }
+    public  BluetoothDevice getDevice() {
+        return device;
+    }
+
+    private  void setDevice(BluetoothDevice device) {
+
+        BluetoothUtil.device = device;
     }
 
 };

@@ -33,6 +33,8 @@ public class BluetoothActivity extends ActionBarActivity {
         setContentView(R.layout.activity_bluetooth);
 
 
+
+
         ToggleButton btTipo = (ToggleButton) findViewById(R.id.toggleButton);
          txtmsg=(TextView) findViewById(R.id.textview_msg);
         etmsg=(EditText) findViewById(R.id.editText);
