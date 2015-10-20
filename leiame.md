@@ -3,8 +3,9 @@
 
 
 1: Adicione a classe BluetoothUtil em seu projeto
+
 2: Adicione as seguintes permissões no manifest:
-  
+
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
   <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
@@ -13,12 +14,14 @@
 
   public static BluetoothUtil util;
   
-  //escolha se quer cliente ou servidor
+  -Escolha se quer cliente ou servidor
+  
   String tipo = BluetoothUtil.TIPO_SERVIDOR;
   ou
   String tipo = BluetoothUtil.TIPO_CLIENTE;
   
-  //inicia bluetooth
+  -Inicia bluetooth
+  
   util = new BluetoothUtil(BluetoothActivity.this,tipo,new Handler() {
                         @Override
                         public void handleMessage(Message msg) {
@@ -32,8 +35,8 @@
                         }
                     });
                     
-  //enviando dados
-  //dica: só envie mensagens se ja estiver recebido o status BluetoothUtil.STATUS_CONECTANDO
+  -Enviando dados
+  -Dica: só envie mensagens se ja estiver recebido o status BluetoothUtil.STATUS_CONECTANDO
    util.enviaDado("Sua mensagem");
                     
   
