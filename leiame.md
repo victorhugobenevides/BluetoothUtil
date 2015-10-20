@@ -46,10 +46,30 @@
   ```   
   
   -Enviando dados
+  
   -Dica: só envie mensagens se ja estiver recebido o status BluetoothUtil.STATUS_CONECTANDO
   
   ```
   util.enviaDado("Sua mensagem");
+ 
+ ```
+ 
+ 
+ -Para usar o bluetooth em outra activity passe a variavel "util" criada acima e atualize a activity.this e o handler
+ 
+   ```
+ util.setHandler(new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                String[] status = (String[]) msg.obj;
+
+               
+            }
+        });
+        
+  //Troque o BluetoothActivity.this por sua activity nova
+        
+  util.setActivity(BluetoothActivity.this);
  
  ```
                
