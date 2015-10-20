@@ -5,14 +5,18 @@
 1: Adicione a classe BluetoothUtil em seu projeto
 
 2: Adicione as seguintes permissões no manifest:
-```
+  
+  ```
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
   <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
+  
   ```
 3: Adicione o codigo onde (Activity) quer pegar a informação:
-```
+  
+  ```
   public static BluetoothUtil util;
+  
   ```
   -Escolha se quer cliente ou servidor
   
@@ -39,11 +43,14 @@
                               
                         }
                     });
-             ```   
+  ```   
+  
   -Enviando dados
   -Dica: só envie mensagens se ja estiver recebido o status BluetoothUtil.STATUS_CONECTANDO
+  
   ```
-   util.enviaDado("Sua mensagem");
-               ```
+  util.enviaDado("Sua mensagem");
+ 
+ ```
                
   
