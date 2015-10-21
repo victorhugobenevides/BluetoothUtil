@@ -690,7 +690,7 @@ public class BluetoothUtil {
                         bytes = mmInStream.read(buffer);
                          readMessage =readMessage+ new String(buffer, 0, bytes);
 
-                        if(tamanho>=readMessage.length()){
+                        if(tamanho<=readMessage.length()){
                             break;
                         }
 
